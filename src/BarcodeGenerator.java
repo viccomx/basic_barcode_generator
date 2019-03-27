@@ -10,7 +10,7 @@ public class BarcodeGenerator {
 
     public Barcode createBarCode(String text, int width, int height)
             throws BarcodeException {
-        Barcode barcode = BarcodeFactory.createCode128(text);
+        Barcode barcode = BarcodeFactory.createCode128A(text);
         barcode.setBarWidth(width);
         barcode.setBarHeight(height);
         return barcode;

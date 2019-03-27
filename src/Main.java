@@ -12,7 +12,7 @@ public class Main {
 
     private static final int width = 1;
     private static final int height = 3;
-    private static final String fileName = "LOTE-BIN-12010.csv";
+    private static final String fileName = "LOTE-BIN-12010_single.csv";
 
     public static void main(String[] args) throws IOException {
         BarcodeGenerator barcodeGenerator = new BarcodeGenerator();
@@ -42,7 +42,8 @@ public class Main {
                 String code = data[0];
 
                 try {
-                    Barcode barcode = barcodeGenerator.createBarCode(code, width, height);
+                    String desiredeData = code + (char)13;
+                    Barcode barcode = barcodeGenerator.createBarCode(desiredeData, width, height);
                     barcodeGenerator.exportBarcodeToPNG(barcode, code);
                     totalCorrectlyProcessed++;
                 } catch (BarcodeException e) {
