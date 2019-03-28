@@ -2,6 +2,7 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.output.OutputException;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,9 +16,18 @@ public class Main {
 
     public static void main(String args[]) throws IOException {
         List<String> files = new ArrayList<>();
-        files.add("single.csv");
-        files.add("double.csv");
-        files.add("triple.csv");
+        files.add("BARCODE_DISH_CAP1.csv");
+        files.add("BARCODE_DISH_CAP6.csv");
+        files.add("BARCODE_DIRECCION_CORPORATIVO_CAP6.csv");
+        files.add("BARCODE_DIRECCION_CORPORATIVO_CAP1.csv");
+        files.add("BARCODE_CORPORATIVO_CAP6.csv");
+        files.add("BARCODE_CORPORATIVO_CAP1.csv");
+        files.add("BARCODE_CINEMEX_CAP6.csv");
+        files.add("BARCODE_CINEMEX_CAP1.csv");
+        files.add("BARCODE_IZZI_CAP6.csv");
+        files.add("BARCODE_IZZI_CAP1.csv");
+        files.add("BARCODE_HBO_CAP6.csv");
+        files.add("BARCODE_HBO_CAP1.csv");
 
         for (String fileName : files) {
             processFile(fileName);
@@ -39,10 +49,14 @@ public class Main {
             inputStream = new FileInputStream(fileName);
             scanner = new Scanner(inputStream, "UTF-8");
 
-            System.out.println("Start processing file " + fileName + "...");
-            System.out.println();
+            System.out.println("=> Start processing file " + fileName + "...");
 
-            String fileNameNoExtension = fileName.replaceAll(".csv", "");
+            String folderName = fileName.replaceAll(".csv", "");
+            File directory = new File(String.valueOf(folderName));
+            if(!directory.exists()){
+                directory.mkdir();
+            }
+
             while (scanner.hasNextLine()) {
                 String readData = scanner.nextLine();
 
@@ -55,8 +69,8 @@ public class Main {
                 try {
                     String desiredeData = code + (char) 13;
                     Barcode barcode = barcodeGenerator.createBarCode(desiredeData, width, height);
-                    String barCodeName = fileNameNoExtension + "_" + code;
-                    barcodeGenerator.exportBarcodeToPNG(barcode, barCodeName);
+                    String imageName = folderName + "/" + code;
+                    barcodeGenerator.exportBarcodeToPNG(barcode, imageName);
                     totalCorrectlyProcessed++;
                 } catch (BarcodeException e) {
                     barCodeExceptions.add(code);
@@ -74,7 +88,6 @@ public class Main {
                 }
             }
 
-            // note that Scanner suppresses exceptions
             if (scanner.ioException() != null) {
                 throw scanner.ioException();
             }
@@ -89,7 +102,7 @@ public class Main {
 
         // Check the results
         if (totalCorrectlyProcessed == totalElements) {
-            System.out.println("Yey! We have finished processing file " + fileName);
+            System.out.println("=> Yey! We have finished processing file " + fileName);
             System.out.println();
         } else {
             int errorCreatingBarCode = barCodeExceptions.size();
