@@ -52,9 +52,14 @@ public class Main {
             System.out.println("=> Start processing file " + fileName + "...");
 
             String folderName = fileName.replaceAll(".csv", "");
-            File directory = new File(String.valueOf(folderName));
-            if(!directory.exists()){
-                directory.mkdir();
+            File directory = new File(folderName);
+            if (!directory.exists()) {
+                boolean folderCreated = directory.mkdir();
+                if (!folderCreated) {
+                    System.out.println("Error, not able to create the folder: " + folderName);
+                    return;
+                }
+                System.out.println("Folder: " + folderName + " was created");
             }
 
             while (scanner.hasNextLine()) {
@@ -84,7 +89,6 @@ public class Main {
                         System.out.println("Error creating the bar code image till now: " + barCodeExceptions.size());
                     if (outputExceptions.size() > 0)
                         System.out.println("Error saving the image till now: " + outputExceptions.size());
-                    System.out.println();
                 }
             }
 
