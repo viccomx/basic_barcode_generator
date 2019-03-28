@@ -78,7 +78,7 @@ public class Main {
                 System.out.println(String.format("ERROR - Not able to create the folder: %1$s", folderName));
                 return false;
             }
-            Utils.info(String.format("Folder %1$s was created", folderName));
+            Utils.info(String.format("%1$s folder was created", folderName));
         }
         return true;
     }
