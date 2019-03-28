@@ -12,9 +12,19 @@ public class Main {
 
     private static final int width = 1;
     private static final int height = 3;
-    private static final String fileName = "LOTE-BIN-12010_single.csv";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String args[]) throws IOException {
+        List<String> files = new ArrayList<>();
+        files.add("single.csv");
+        files.add("double.csv");
+        files.add("triple.csv");
+
+        for (String fileName : files) {
+            processFile(fileName);
+        }
+    }
+
+    public static void processFile(String fileName) throws IOException {
         BarcodeGenerator barcodeGenerator = new BarcodeGenerator();
 
         List<String> barCodeExceptions = new ArrayList<>();
@@ -29,9 +39,10 @@ public class Main {
             inputStream = new FileInputStream(fileName);
             scanner = new Scanner(inputStream, "UTF-8");
 
-            System.out.println("Start processing file...");
+            System.out.println("Start processing file " + fileName + "...");
             System.out.println();
 
+            String fileNameNoExtension = fileName.replaceAll(".csv", "");
             while (scanner.hasNextLine()) {
                 String readData = scanner.nextLine();
 
@@ -42,9 +53,10 @@ public class Main {
                 String code = data[0];
 
                 try {
-                    String desiredeData = code + (char)13;
+                    String desiredeData = code + (char) 13;
                     Barcode barcode = barcodeGenerator.createBarCode(desiredeData, width, height);
-                    barcodeGenerator.exportBarcodeToPNG(barcode, code);
+                    String barCodeName = fileNameNoExtension + "_" + code;
+                    barcodeGenerator.exportBarcodeToPNG(barcode, barCodeName);
                     totalCorrectlyProcessed++;
                 } catch (BarcodeException e) {
                     barCodeExceptions.add(code);
@@ -77,7 +89,8 @@ public class Main {
 
         // Check the results
         if (totalCorrectlyProcessed == totalElements) {
-            System.out.println("Yey! We have finished");
+            System.out.println("Yey! We have finished processing file " + fileName);
+            System.out.println();
         } else {
             int errorCreatingBarCode = barCodeExceptions.size();
             System.out.println("Not able to create the bar code: " + errorCreatingBarCode);
