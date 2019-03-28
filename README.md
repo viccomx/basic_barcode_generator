@@ -10,3 +10,5 @@ Output folder: barcodes
 
 The expected output and png image in a specific folder, for the aboc example
 11061991-20061911.png is saved in barcodes/<codes_to_process>/11061991-20061911.png
+
+Please if you use this, fork it and if it really helps you give me a star.
