@@ -1,6 +1,5 @@
 # Basic barcode generator
-Simple barcode generator for csv files
-Uses barbecue library ref. http://barbecue.sourceforge.net
+Simple barcode generator for csv files that uses barbecue library ref. http://barbecue.sourceforge.net
 
 Tries to get the CSV files in a given folder and process each of them. The generated bar codes are saved under the output folder.
 
