@@ -11,32 +11,93 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static final int width = 1;
-    private static final int height = 3;
+    // Do not change the filesExtension, as this is the expected for all the program. Otherwise maybe the logic should be changed
+    // a little bit.
+    private static final String filesExtension = "csv";
+    private static final String imageFormat = "png";
+
 
     public static void main(String args[]) throws IOException {
-        List<String> files = new ArrayList<>();
-        files.add("BARCODE_DISH_CAP1.csv");
-        files.add("BARCODE_DISH_CAP6.csv");
-        files.add("BARCODE_DIRECCION_CORPORATIVO_CAP6.csv");
-        files.add("BARCODE_DIRECCION_CORPORATIVO_CAP1.csv");
-        files.add("BARCODE_CORPORATIVO_CAP6.csv");
-        files.add("BARCODE_CORPORATIVO_CAP1.csv");
-        files.add("BARCODE_CINEMEX_CAP6.csv");
-        files.add("BARCODE_CINEMEX_CAP1.csv");
-        files.add("BARCODE_IZZI_CAP6.csv");
-        files.add("BARCODE_IZZI_CAP1.csv");
-        files.add("BARCODE_HBO_CAP6.csv");
-        files.add("BARCODE_HBO_CAP1.csv");
+        String containerFolder = "files_container";
+        String destinationFolder = "barcodes";
 
-        for (String fileName : files) {
-            processFile(fileName);
+        //Utils.setVerbosity(true);
+
+        Utils.info(String.format("Getting files to process from folder %1$s", containerFolder));
+        ArrayList<String> fileNamesToProcess = getFileNamesToProcess(containerFolder, filesExtension);
+        int totalFilesToProcess = fileNamesToProcess.size();
+        if (totalFilesToProcess == 0) {
+            System.out.println("Not found files to process");
+            return;
+        }
+
+        // Create general destination folder
+        boolean folderCreated = folderCreation(destinationFolder);
+        if (!folderCreated) {
+            System.out.println("ERROR - Not able to create destination folder");
+            return;
+        }
+
+        int barcodeWidth = 1;
+        int barcodeHeight = 3;
+        Utils.info(String.format("About to process %1$s files", fileNamesToProcess.size()));
+        BarcodeGenerator barcodeGenerator = new BarcodeGenerator();
+        for (String fileName : fileNamesToProcess) {
+            String filePath = String.format("%1$s/%2$s", containerFolder, fileName);
+            boolean fileCorrectlyProcessed = getBarCodesFromFile(filePath, fileName, destinationFolder, "UTF-8",
+                    0, imageFormat, barcodeWidth, barcodeHeight, barcodeGenerator, true);
+            if (fileCorrectlyProcessed) {
+                System.out.println(String.format("Finished processing file - %1$s", fileName));
+                System.out.println();
+            }
         }
     }
 
-    public static void processFile(String fileName) throws IOException {
-        BarcodeGenerator barcodeGenerator = new BarcodeGenerator();
+    private static ArrayList<String> getFileNamesToProcess(String path, String requiredExtension) {
+        ArrayList<String> fileNamesToProcess = new ArrayList<>();
 
+        File containerFolder = new File(path);
+        File[] files = containerFolder.listFiles();
+        for (File file : files) {
+            if (!file.isFile())
+                continue;
+
+            String fileName = file.getName();
+            if (fileName.contains(requiredExtension))
+                fileNamesToProcess.add(fileName);
+        }
+
+        return fileNamesToProcess;
+    }
+
+    private static boolean folderCreation(String folderName) {
+        File directory = new File(folderName);
+        if (!directory.exists()) {
+            boolean folderCreated = directory.mkdir();
+            if (!folderCreated) {
+                System.out.println(String.format("ERROR - Not able to create the folder: %1$s", folderName));
+                return false;
+            }
+            Utils.info(String.format("Folder %1$s was created", folderName));
+        }
+        return true;
+    }
+
+    /**
+     * @param fileName:                filename of the file that contains the data that needs to be encoded
+     * @param chartSet:                file charset
+     * @param dataToEncodeColumnIndex: which column of the file has the data that needs to be encoded
+     * @param imageFormat:             format of the desired image
+     * @param width:                   width of the image
+     * @param height:                  height of the image
+     * @param barcodeGenerator:        Object
+     * @param showErrors:              is we want to show the raised errors
+     * @return if the file was processed correctly
+     * @throws IOException: if not file was found
+     */
+    private static boolean getBarCodesFromFile(String filePath, String fileName, String destinationPath, String chartSet, int dataToEncodeColumnIndex,
+                                               String imageFormat, int width, int height, BarcodeGenerator barcodeGenerator,
+                                               boolean showErrors) throws IOException {
         List<String> barCodeExceptions = new ArrayList<>();
         List<String> outputExceptions = new ArrayList<>();
 
@@ -46,20 +107,18 @@ public class Main {
         FileInputStream inputStream = null;
         Scanner scanner = null;
         try {
-            inputStream = new FileInputStream(fileName);
-            scanner = new Scanner(inputStream, "UTF-8");
+            inputStream = new FileInputStream(filePath);
+            scanner = new Scanner(inputStream, chartSet);
 
-            System.out.println("=> Start processing file " + fileName + "...");
+            Utils.info(String.format("Start processing file %1$s...", fileName));
 
-            String folderName = fileName.replaceAll(".csv", "");
-            File directory = new File(folderName);
-            if (!directory.exists()) {
-                boolean folderCreated = directory.mkdir();
-                if (!folderCreated) {
-                    System.out.println("Error, not able to create the folder: " + folderName);
-                    return;
-                }
-                System.out.println("Folder: " + folderName + " was created");
+            // Create a folder if needed to group all the bar codes under the same specific folder.
+            String regex = String.format(".%1$s", filesExtension);
+            String folderName = fileName.replaceAll(regex, "");
+            String destinationFolderPath = String.format("%1$s/%2$s", destinationPath, folderName);
+            boolean folderCreated = folderCreation(destinationFolderPath);
+            if (!folderCreated) {
+                return false;
             }
 
             while (scanner.hasNextLine()) {
@@ -67,15 +126,15 @@ public class Main {
 
                 totalElements++;
 
-                // Get the data according to the excel format
                 String data[] = readData.split(",");
-                String code = data[0];
+                String code = data[dataToEncodeColumnIndex];
 
                 try {
-                    String desiredeData = code + (char) 13;
-                    Barcode barcode = barcodeGenerator.createBarCode(desiredeData, width, height);
-                    String imageName = folderName + "/" + code;
-                    barcodeGenerator.exportBarcodeToPNG(barcode, imageName);
+                    // Keep in mind that 13 is the <ENTER> special character and to use it the encoding should be 128A
+                    String dataToEncode = code + (char) 13;
+                    Barcode barcode = barcodeGenerator.createBarCode(dataToEncode, width, height);
+                    String barcodePath = destinationFolderPath + "/" + code + "." + imageFormat;
+                    barcodeGenerator.exportBarcodeToPNG(barcode, barcodePath);
                     totalCorrectlyProcessed++;
                 } catch (BarcodeException e) {
                     barCodeExceptions.add(code);
@@ -83,12 +142,12 @@ public class Main {
                     outputExceptions.add(code);
                 }
 
-                if (totalElements % 1000 == 0) {
-                    System.out.println(totalElements + " are done");
+                if (totalElements % 1000 == 0 && Utils.getVerbosity()) {
+                    Utils.info(String.format("%1$s are done", totalElements));
                     if (barCodeExceptions.size() > 0)
-                        System.out.println("Error creating the bar code image till now: " + barCodeExceptions.size());
+                        Utils.info(String.format("EROR - Creating the bar code image till now: %1$s", barCodeExceptions.size()));
                     if (outputExceptions.size() > 0)
-                        System.out.println("Error saving the image till now: " + outputExceptions.size());
+                        Utils.info(String.format("ERROR - Saving the image till now: %1$s", outputExceptions.size()));
                 }
             }
 
@@ -104,24 +163,21 @@ public class Main {
             }
         }
 
-        // Check the results
         if (totalCorrectlyProcessed == totalElements) {
-            System.out.println("=> Yey! We have finished processing file " + fileName);
-            System.out.println();
-        } else {
-            int errorCreatingBarCode = barCodeExceptions.size();
-            System.out.println("Not able to create the bar code: " + errorCreatingBarCode);
+            return true;
+        }
+
+        if (showErrors) {
+            System.out.println(String.format("Not able to create the bar code:  %1$s", barCodeExceptions.size()));
             for (String code : barCodeExceptions) {
                 System.out.println(code);
             }
-
-            System.out.println();
-
-            int errorOutput = outputExceptions.size();
-            System.out.println("Not able to export to image: " + errorOutput);
+            System.out.println(String.format("Not able to export to image: %1$s", outputExceptions.size()));
             for (String code : outputExceptions) {
                 System.out.println(code);
             }
         }
+
+        return false;
     }
 }

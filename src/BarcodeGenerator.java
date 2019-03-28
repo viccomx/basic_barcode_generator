@@ -18,7 +18,6 @@ public class BarcodeGenerator {
 
     public void exportBarcodeToPNG(Barcode barcode, String fileName)
             throws OutputException {
-        fileName = fileName + ".png";
         File f = new File(fileName);
         BarcodeImageHandler.savePNG(barcode, f);
     }
