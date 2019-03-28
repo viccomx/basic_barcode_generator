@@ -17,7 +17,7 @@ public class Main {
     private static final String imageFormat = "png";
 
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String[] args) throws IOException {
         String containerFolder = "files_container";
         String destinationFolder = "barcodes";
 
@@ -58,6 +58,10 @@ public class Main {
 
         File containerFolder = new File(path);
         File[] files = containerFolder.listFiles();
+        if (files == null || files.length == 0) {
+            return fileNamesToProcess;
+        }
+
         for (File file : files) {
             if (!file.isFile())
                 continue;
@@ -95,9 +99,9 @@ public class Main {
      * @return if the file was processed correctly
      * @throws IOException: if not file was found
      */
-    private static boolean getBarCodesFromFile(String filePath, String fileName, String destinationPath, String chartSet, int dataToEncodeColumnIndex,
-                                               String imageFormat, int width, int height, BarcodeGenerator barcodeGenerator,
-                                               boolean showErrors) throws IOException {
+    private static boolean getBarCodesFromFile(String filePath, String fileName, String destinationPath, String chartSet,
+                                               int dataToEncodeColumnIndex, String imageFormat, int width, int height,
+                                               BarcodeGenerator barcodeGenerator, boolean showErrors) throws IOException {
         List<String> barCodeExceptions = new ArrayList<>();
         List<String> outputExceptions = new ArrayList<>();
 
