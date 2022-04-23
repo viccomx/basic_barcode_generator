@@ -1,3 +1,5 @@
+import com.github.javaparser.utils.Log;
+import groovy.util.logging.Slf4j;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeException;
 import net.sourceforge.barbecue.output.OutputException;
@@ -9,21 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Main {
-
+@Slf4j
+public class BarcodesFromFolder {
     // Do not change the filesExtension, as this is the expected for all the program. Otherwise maybe the logic should be changed
-    // a little bit.
+    // a bit.
     private static final String filesExtension = "csv";
     private static final String imageFormat = "png";
 
-
     public static void main(String[] args) throws IOException {
-        String containerFolder = "files_container";
-        String destinationFolder = "barcodes";
+        String containerFolder = "src/main/resources";
+        String destinationFolder = "src/main/resources/barcodes";
 
-        //Utils.setVerbosity(true);
-
-        Utils.info(String.format("Getting files to process from folder %1$s", containerFolder));
+        Log.info(String.format("Getting files to process from folder %1$s", containerFolder));
         ArrayList<String> fileNamesToProcess = getFileNamesToProcess(containerFolder, filesExtension);
         int totalFilesToProcess = fileNamesToProcess.size();
         if (totalFilesToProcess == 0) {
@@ -40,7 +39,7 @@ public class Main {
 
         int barcodeWidth = 1;
         int barcodeHeight = 3;
-        Utils.info(String.format("About to process %1$s files", fileNamesToProcess.size()));
+        Log.info(String.format("About to process %1$s files", fileNamesToProcess.size()));
         BarcodeGenerator barcodeGenerator = new BarcodeGenerator();
         for (String fileName : fileNamesToProcess) {
             String filePath = String.format("%1$s/%2$s", containerFolder, fileName);
@@ -82,7 +81,7 @@ public class Main {
                 System.out.println(String.format("ERROR - Not able to create the folder: %1$s", folderName));
                 return false;
             }
-            Utils.info(String.format("%1$s folder was created", folderName));
+            Log.info(String.format("%1$s folder was created", folderName));
         }
         return true;
     }
@@ -114,7 +113,7 @@ public class Main {
             inputStream = new FileInputStream(filePath);
             scanner = new Scanner(inputStream, chartSet);
 
-            Utils.info(String.format("Start processing file %1$s...", fileName));
+            Log.info(String.format("Start processing file %1$s...", fileName));
 
             // Create a folder if needed to group all the bar codes under the same specific folder.
             String regex = String.format(".%1$s", filesExtension);
@@ -146,12 +145,12 @@ public class Main {
                     outputExceptions.add(code);
                 }
 
-                if (totalElements % 1000 == 0 && Utils.getVerbosity()) {
-                    Utils.info(String.format("%1$s are done", totalElements));
+                if (totalElements % 1000 == 0) {
+                    Log.info(String.format("%1$s are done", totalElements));
                     if (barCodeExceptions.size() > 0)
-                        Utils.info(String.format("EROR - Creating the bar code image till now: %1$s", barCodeExceptions.size()));
+                        Log.info(String.format("EROR - Creating the bar code image till now: %1$s", barCodeExceptions.size()));
                     if (outputExceptions.size() > 0)
-                        Utils.info(String.format("ERROR - Saving the image till now: %1$s", outputExceptions.size()));
+                        Log.info(String.format("ERROR - Saving the image till now: %1$s", outputExceptions.size()));
                 }
             }
 
