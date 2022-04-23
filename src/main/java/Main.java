@@ -13,18 +13,15 @@ import java.util.Scanner;
 
 @Slf4j
 public class Main {
-
     // Do not change the filesExtension, as this is the expected for all the program. Otherwise maybe the logic should be changed
     // a bit.
     private static final String filesExtension = "csv";
     private static final String imageFormat = "png";
 
-
     public static void main(String[] args) throws IOException {
-        String containerFolder = "files_container";
-        String destinationFolder = "barcodes";
+        String containerFolder = "src/main/resources";
+        String destinationFolder = "src/main/resources/barcodes";
 
-        //Utils.setVerbosity(true);
         Log.info(String.format("Getting files to process from folder %1$s", containerFolder));
         ArrayList<String> fileNamesToProcess = getFileNamesToProcess(containerFolder, filesExtension);
         int totalFilesToProcess = fileNamesToProcess.size();
