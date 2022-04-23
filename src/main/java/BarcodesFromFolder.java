@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 
 @Slf4j
-public class Main {
+public class BarcodesFromFolder {
     // Do not change the filesExtension, as this is the expected for all the program. Otherwise maybe the logic should be changed
     // a bit.
     private static final String filesExtension = "csv";
